@@ -65,6 +65,7 @@ function loadConfig(cwd) {
     parallelization: true,
     brave_search: false,
     resolve_model_ids: false, // when true, resolve aliases (opus/sonnet/haiku) to full model IDs
+    context_window: 200000, // default 200k; set to 1000000 for Opus/Sonnet 4.6 1M models
   };
 
   try {
@@ -108,6 +109,7 @@ function loadConfig(cwd) {
       parallelization,
       brave_search: get('brave_search') ?? defaults.brave_search,
       resolve_model_ids: get('resolve_model_ids') ?? defaults.resolve_model_ids,
+      context_window: get('context_window') ?? defaults.context_window,
       model_overrides: parsed.model_overrides || null,
     };
   } catch {

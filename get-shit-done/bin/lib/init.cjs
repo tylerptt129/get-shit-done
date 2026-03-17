@@ -31,6 +31,7 @@ function cmdInitExecutePhase(cwd, phase, raw) {
     // Config flags
     commit_docs: config.commit_docs,
     parallelization: config.parallelization,
+    context_window: config.context_window,
     branching_strategy: config.branching_strategy,
     phase_branch_template: config.phase_branch_template,
     milestone_branch_template: config.milestone_branch_template,

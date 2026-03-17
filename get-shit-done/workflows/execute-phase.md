@@ -191,8 +191,9 @@ Execute each wave in sequence. Within a wave: parallel if `PARALLELIZATION=true`
 
 2. **Spawn executor agents:**
 
-   Pass paths only — executors read files themselves with their fresh 200k context.
-   This keeps orchestrator context lean (~10-15%).
+   Pass paths only — executors read files themselves with their fresh context window.
+   For 200k models, this keeps orchestrator context lean (~10-15%).
+   For 1M+ models (Opus 4.6, Sonnet 4.6), richer context can be passed directly.
 
    ```
    Task(
@@ -652,7 +653,13 @@ Only suggest the commands listed above. Do not invent or hallucinate command nam
 </process>
 
 <context_efficiency>
-Orchestrator: ~10-15% context. Subagents: fresh 200k each. No polling (Task blocks). No context bleed.
+Orchestrator: ~10-15% context for 200k windows, can use more for 1M+ windows.
+Subagents: fresh context each (200k-1M depending on model). No polling (Task blocks). No context bleed.
+
+For 1M+ context models, consider:
+- Passing richer context (code snippets, dependency outputs) directly to executors instead of just file paths
+- Running small phases (≤3 plans, no dependencies) inline without subagent spawning overhead
+- Relaxing /clear recommendations — context rot onset is much further out with 5x window
 </context_efficiency>
 
 <failure_handling>
