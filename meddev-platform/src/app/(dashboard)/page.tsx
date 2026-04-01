@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { SystemStatus } from "@/components/dashboard/system-status";
 
 const stats = [
   {
@@ -272,6 +273,45 @@ export default function DashboardPage() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+
+      {/* System Status + Risk Overview */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-1">
+          <SystemStatus />
+        </div>
+        <div className="lg:col-span-2 rounded-xl border bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b p-4">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-muted-foreground" />
+              <h2 className="font-semibold">Risk Overview</h2>
+            </div>
+          </div>
+          <div className="p-4">
+            <div className="grid grid-cols-5 gap-3">
+              {[
+                { level: "Unacceptable", count: 0, color: "bg-red-500", textColor: "text-red-700", bg: "bg-red-50" },
+                { level: "High", count: 3, color: "bg-orange-500", textColor: "text-orange-700", bg: "bg-orange-50" },
+                { level: "Medium", count: 8, color: "bg-yellow-500", textColor: "text-yellow-700", bg: "bg-yellow-50" },
+                { level: "Low", count: 12, color: "bg-green-500", textColor: "text-green-700", bg: "bg-green-50" },
+                { level: "Negligible", count: 5, color: "bg-gray-400", textColor: "text-gray-700", bg: "bg-gray-50" },
+              ].map((r) => (
+                <div key={r.level} className={cn("rounded-lg p-3 text-center", r.bg)}>
+                  <div className={cn("text-2xl font-bold", r.textColor)}>{r.count}</div>
+                  <div className="text-[10px] text-muted-foreground mt-1">{r.level}</div>
+                  <div className={cn("h-1.5 rounded-full mt-2", r.color)} />
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 rounded-lg bg-muted/50 p-3">
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">28 total risk assessments</span> across 4 active products.
+                All risks are within acceptable levels per ISO 14971 risk management framework.
+                Next risk review scheduled for Q2 2026.
+              </p>
+            </div>
           </div>
         </div>
       </div>
