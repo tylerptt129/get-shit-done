@@ -1,0 +1,875 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// CORE USER & ORGANIZATION MODELS
+// ============================================================================
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       User[]
+  departments Department[]
+  documents   Document[]
+  products    Product[]
+  audits      Audit[]
+  trainings   Training[]
+  suppliers   Supplier[]
+  capas       CAPA[]
+  complaints  Complaint[]
+  risks       RiskAssessment[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String
+  title          String?
+  role           UserRole @default(VIEWER)
+  department     String?
+  avatar         String?
+  isActive       Boolean  @default(true)
+  lastLogin      DateTime?
+  organizationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization      Organization       @relation(fields: [organizationId], references: [id])
+  createdDocuments   Document[]         @relation("DocumentCreator")
+  approvedDocuments  DocumentApproval[] @relation("Approver")
+  trainingSessions   TrainingRecord[]
+  auditFindings      AuditFinding[]     @relation("FindingAssignee")
+  capaOwner          CAPA[]             @relation("CAPAOwner")
+  designReviews      DesignReview[]     @relation("Reviewer")
+  nonconformances    Nonconformance[]   @relation("NCAssignee")
+  changeRequests     ChangeRequest[]    @relation("ChangeRequester")
+  changeApprovals    ChangeRequest[]    @relation("ChangeApprover")
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  QUALITY_MANAGER
+  REGULATORY_MANAGER
+  DEPARTMENT_HEAD
+  ENGINEER
+  SPECIALIST
+  VIEWER
+}
+
+// ============================================================================
+// DEPARTMENT MODEL
+// ============================================================================
+
+model Department {
+  id             String @id @default(cuid())
+  name           String
+  slug           String
+  description    String?
+  organizationId String
+  headUserId     String?
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, slug])
+  @@map("departments")
+}
+
+// ============================================================================
+// DOCUMENT MANAGEMENT (ISO 13485 Section 4.2)
+// ============================================================================
+
+model Document {
+  id              String         @id @default(cuid())
+  documentNumber  String
+  title           String
+  description     String?
+  type            DocumentType
+  category        String
+  status          DocumentStatus @default(DRAFT)
+  version         String         @default("1.0")
+  revision        Int            @default(0)
+  effectiveDate   DateTime?
+  reviewDate      DateTime?
+  expiryDate      DateTime?
+  filePath        String?
+  fileSize        Int?
+  content         String?        @db.Text
+  organizationId  String
+  createdById     String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  createdBy    User               @relation("DocumentCreator", fields: [createdById], references: [id])
+  approvals    DocumentApproval[]
+  versions     DocumentVersion[]
+  labels       LabelDocument[]
+
+  @@unique([organizationId, documentNumber])
+  @@map("documents")
+}
+
+model DocumentVersion {
+  id         String   @id @default(cuid())
+  documentId String
+  version    String
+  revision   Int
+  changes    String?  @db.Text
+  filePath   String?
+  createdAt  DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id])
+
+  @@map("document_versions")
+}
+
+model DocumentApproval {
+  id         String         @id @default(cuid())
+  documentId String
+  approverId String
+  status     ApprovalStatus @default(PENDING)
+  comments   String?
+  approvedAt DateTime?
+  createdAt  DateTime       @default(now())
+
+  document Document @relation(fields: [documentId], references: [id])
+  approver User     @relation("Approver", fields: [approverId], references: [id])
+
+  @@map("document_approvals")
+}
+
+enum DocumentType {
+  SOP
+  WORK_INSTRUCTION
+  FORM
+  TEMPLATE
+  POLICY
+  SPECIFICATION
+  PROTOCOL
+  REPORT
+  DHF
+  DMR
+  DHR
+  TECHNICAL_FILE
+}
+
+enum DocumentStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  EFFECTIVE
+  OBSOLETE
+  ARCHIVED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  RECALLED
+}
+
+// ============================================================================
+// PRODUCT & DESIGN CONTROL (ISO 13485 Section 7.3)
+// ============================================================================
+
+model Product {
+  id                String        @id @default(cuid())
+  name              String
+  productCode       String
+  description       String?
+  classification    DeviceClass
+  regulatoryClass   String?
+  intendedUse       String?       @db.Text
+  status            ProductStatus @default(DEVELOPMENT)
+  version           String        @default("1.0")
+  organizationId    String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  designInputs    DesignInput[]
+  designOutputs   DesignOutput[]
+  designReviews   DesignReview[]
+  riskAssessments RiskAssessment[]
+  labels          Label[]
+  submissions     RegulatorySubmission[]
+
+  @@unique([organizationId, productCode])
+  @@map("products")
+}
+
+model DesignInput {
+  id          String            @id @default(cuid())
+  productId   String
+  requirement String
+  source      String?
+  type        DesignInputType
+  priority    Priority          @default(MEDIUM)
+  status      DesignInputStatus @default(OPEN)
+  rationale   String?           @db.Text
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  product       Product              @relation(fields: [productId], references: [id])
+  traceability  DesignTraceability[] @relation("InputTrace")
+
+  @@map("design_inputs")
+}
+
+model DesignOutput {
+  id          String             @id @default(cuid())
+  productId   String
+  description String
+  type        DesignOutputType
+  status      DesignOutputStatus @default(IN_PROGRESS)
+  documentRef String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  product      Product              @relation(fields: [productId], references: [id])
+  traceability DesignTraceability[] @relation("OutputTrace")
+
+  @@map("design_outputs")
+}
+
+model DesignTraceability {
+  id             String @id @default(cuid())
+  designInputId  String
+  designOutputId String
+
+  designInput  DesignInput  @relation("InputTrace", fields: [designInputId], references: [id])
+  designOutput DesignOutput @relation("OutputTrace", fields: [designOutputId], references: [id])
+
+  @@unique([designInputId, designOutputId])
+  @@map("design_traceability")
+}
+
+model DesignReview {
+  id          String             @id @default(cuid())
+  productId   String
+  reviewerId  String
+  phase       DesignPhase
+  status      DesignReviewStatus @default(SCHEDULED)
+  scheduledAt DateTime
+  completedAt DateTime?
+  findings    String?            @db.Text
+  decision    String?
+  createdAt   DateTime           @default(now())
+
+  product  Product @relation(fields: [productId], references: [id])
+  reviewer User    @relation("Reviewer", fields: [reviewerId], references: [id])
+
+  @@map("design_reviews")
+}
+
+enum DeviceClass {
+  CLASS_I
+  CLASS_II
+  CLASS_III
+}
+
+enum ProductStatus {
+  DEVELOPMENT
+  VERIFICATION
+  VALIDATION
+  RELEASED
+  DISCONTINUED
+}
+
+enum DesignInputType {
+  USER_NEED
+  REGULATORY
+  STANDARD
+  PERFORMANCE
+  SAFETY
+  INTERFACE
+}
+
+enum DesignInputStatus {
+  OPEN
+  VERIFIED
+  VALIDATED
+  CLOSED
+}
+
+enum DesignOutputType {
+  SPECIFICATION
+  DRAWING
+  SOFTWARE
+  LABELING
+  PACKAGING
+  MANUFACTURING
+}
+
+enum DesignOutputStatus {
+  IN_PROGRESS
+  COMPLETE
+  VERIFIED
+}
+
+enum DesignPhase {
+  CONCEPT
+  FEASIBILITY
+  DESIGN_INPUT
+  DESIGN_OUTPUT
+  VERIFICATION
+  VALIDATION
+  TRANSFER
+}
+
+enum DesignReviewStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  ACTION_REQUIRED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// ============================================================================
+// RISK MANAGEMENT (ISO 14971)
+// ============================================================================
+
+model RiskAssessment {
+  id              String       @id @default(cuid())
+  productId       String
+  title           String
+  hazard          String
+  hazardSituation String       @db.Text
+  harm            String
+  severityBefore  Int          @db.SmallInt
+  probabilityBefore Int        @db.SmallInt
+  riskLevelBefore RiskLevel
+  mitigationMeasure String?    @db.Text
+  severityAfter   Int?         @db.SmallInt
+  probabilityAfter Int?        @db.SmallInt
+  riskLevelAfter  RiskLevel?
+  status          RiskStatus   @default(IDENTIFIED)
+  organizationId  String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  product      Product      @relation(fields: [productId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("risk_assessments")
+}
+
+enum RiskLevel {
+  NEGLIGIBLE
+  LOW
+  MEDIUM
+  HIGH
+  UNACCEPTABLE
+}
+
+enum RiskStatus {
+  IDENTIFIED
+  ANALYZED
+  MITIGATED
+  ACCEPTED
+  MONITORED
+}
+
+// ============================================================================
+// REGULATORY & SUBMISSIONS
+// ============================================================================
+
+model RegulatorySubmission {
+  id               String           @id @default(cuid())
+  productId        String
+  type             SubmissionType
+  market           String
+  regulatoryBody   String
+  submissionNumber String?
+  status           SubmissionStatus @default(PREPARING)
+  submittedAt      DateTime?
+  approvedAt       DateTime?
+  expiresAt        DateTime?
+  notes            String?          @db.Text
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("regulatory_submissions")
+}
+
+enum SubmissionType {
+  FDA_510K
+  FDA_PMA
+  FDA_DE_NOVO
+  CE_MARK
+  MDR
+  HEALTH_CANADA
+  TGA
+  PMDA
+}
+
+enum SubmissionStatus {
+  PREPARING
+  SUBMITTED
+  UNDER_REVIEW
+  ADDITIONAL_INFO
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+// ============================================================================
+// LABELING (21 CFR 801 / MDR Annex I)
+// ============================================================================
+
+model Label {
+  id          String      @id @default(cuid())
+  productId   String
+  name        String
+  type        LabelType
+  version     String      @default("1.0")
+  status      LabelStatus @default(DRAFT)
+  content     String?     @db.Text
+  udiDi       String?
+  lotNumber   String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  product   Product         @relation(fields: [productId], references: [id])
+  documents LabelDocument[]
+
+  @@map("labels")
+}
+
+model LabelDocument {
+  id         String @id @default(cuid())
+  labelId    String
+  documentId String
+
+  label    Label    @relation(fields: [labelId], references: [id])
+  document Document @relation(fields: [documentId], references: [id])
+
+  @@unique([labelId, documentId])
+  @@map("label_documents")
+}
+
+enum LabelType {
+  DEVICE_LABEL
+  IFU
+  PACKAGE_INSERT
+  OUTER_PACKAGING
+  SHIPPING_LABEL
+  UDI_LABEL
+}
+
+enum LabelStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PRINTED
+  OBSOLETE
+}
+
+// ============================================================================
+// AUDIT MANAGEMENT (ISO 13485 Section 8.2.2)
+// ============================================================================
+
+model Audit {
+  id             String      @id @default(cuid())
+  title          String
+  type           AuditType
+  scope          String?     @db.Text
+  status         AuditStatus @default(PLANNED)
+  scheduledDate  DateTime
+  completedDate  DateTime?
+  leadAuditor    String?
+  organizationId String
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  organization Organization   @relation(fields: [organizationId], references: [id])
+  findings     AuditFinding[]
+
+  @@map("audits")
+}
+
+model AuditFinding {
+  id           String              @id @default(cuid())
+  auditId      String
+  assigneeId   String?
+  type         AuditFindingType
+  severity     FindingSeverity
+  description  String              @db.Text
+  clause       String?
+  status       AuditFindingStatus  @default(OPEN)
+  dueDate      DateTime?
+  closedAt     DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  audit    Audit @relation(fields: [auditId], references: [id])
+  assignee User? @relation("FindingAssignee", fields: [assigneeId], references: [id])
+
+  @@map("audit_findings")
+}
+
+enum AuditType {
+  INTERNAL
+  EXTERNAL
+  SUPPLIER
+  REGULATORY
+  CERTIFICATION
+}
+
+enum AuditStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CLOSED
+}
+
+enum AuditFindingType {
+  MAJOR_NC
+  MINOR_NC
+  OBSERVATION
+  OPPORTUNITY
+  STRENGTH
+}
+
+enum FindingSeverity {
+  CRITICAL
+  MAJOR
+  MINOR
+  OBSERVATION
+}
+
+enum AuditFindingStatus {
+  OPEN
+  IN_PROGRESS
+  CORRECTED
+  VERIFIED
+  CLOSED
+}
+
+// ============================================================================
+// CAPA (ISO 13485 Section 8.5.2 / 8.5.3)
+// ============================================================================
+
+model CAPA {
+  id              String     @id @default(cuid())
+  capaNumber      String
+  title           String
+  type            CAPAType
+  source          String?
+  description     String     @db.Text
+  rootCause       String?    @db.Text
+  correction      String?    @db.Text
+  correctiveAction String?   @db.Text
+  preventiveAction String?   @db.Text
+  status          CAPAStatus @default(INITIATED)
+  priority        Priority   @default(MEDIUM)
+  ownerId         String
+  dueDate         DateTime?
+  closedAt        DateTime?
+  organizationId  String
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  owner        User         @relation("CAPAOwner", fields: [ownerId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, capaNumber])
+  @@map("capas")
+}
+
+enum CAPAType {
+  CORRECTIVE
+  PREVENTIVE
+  BOTH
+}
+
+enum CAPAStatus {
+  INITIATED
+  INVESTIGATING
+  ROOT_CAUSE_IDENTIFIED
+  ACTION_PLANNED
+  ACTION_IMPLEMENTED
+  EFFECTIVENESS_CHECK
+  CLOSED
+}
+
+// ============================================================================
+// COMPLAINTS & NONCONFORMANCES
+// ============================================================================
+
+model Complaint {
+  id              String          @id @default(cuid())
+  complaintNumber String
+  title           String
+  description     String          @db.Text
+  source          ComplaintSource
+  severity        Priority        @default(MEDIUM)
+  reportable      Boolean         @default(false)
+  status          ComplaintStatus @default(RECEIVED)
+  receivedDate    DateTime        @default(now())
+  closedDate      DateTime?
+  organizationId  String
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, complaintNumber])
+  @@map("complaints")
+}
+
+model Nonconformance {
+  id          String   @id @default(cuid())
+  ncNumber    String
+  title       String
+  description String   @db.Text
+  type        NCType
+  source      String?
+  status      NCStatus @default(IDENTIFIED)
+  assigneeId  String?
+  disposition String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignee User? @relation("NCAssignee", fields: [assigneeId], references: [id])
+
+  @@map("nonconformances")
+}
+
+enum ComplaintSource {
+  CUSTOMER
+  FIELD
+  INTERNAL
+  REGULATORY
+  DISTRIBUTOR
+}
+
+enum ComplaintStatus {
+  RECEIVED
+  UNDER_INVESTIGATION
+  DETERMINED_REPORTABLE
+  MDR_FILED
+  CLOSED
+}
+
+enum NCType {
+  INCOMING_MATERIAL
+  IN_PROCESS
+  FINISHED_PRODUCT
+  FIELD_RETURN
+  DOCUMENT
+}
+
+enum NCStatus {
+  IDENTIFIED
+  QUARANTINED
+  UNDER_REVIEW
+  DISPOSITIONED
+  CLOSED
+}
+
+// ============================================================================
+// TRAINING (ISO 13485 Section 6.2)
+// ============================================================================
+
+model Training {
+  id             String         @id @default(cuid())
+  title          String
+  description    String?        @db.Text
+  type           TrainingType
+  department     String?
+  requiredBy     DateTime?
+  organizationId String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  records      TrainingRecord[]
+
+  @@map("trainings")
+}
+
+model TrainingRecord {
+  id          String               @id @default(cuid())
+  trainingId  String
+  userId      String
+  status      TrainingRecordStatus @default(ASSIGNED)
+  assignedAt  DateTime             @default(now())
+  completedAt DateTime?
+  score       Float?
+  certificate String?
+
+  training Training @relation(fields: [trainingId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@unique([trainingId, userId])
+  @@map("training_records")
+}
+
+enum TrainingType {
+  SOP_TRAINING
+  GMP_TRAINING
+  SAFETY
+  COMPETENCY
+  ONBOARDING
+  REGULATORY
+  EQUIPMENT
+}
+
+enum TrainingRecordStatus {
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+  WAIVED
+}
+
+// ============================================================================
+// SUPPLIER MANAGEMENT (ISO 13485 Section 7.4)
+// ============================================================================
+
+model Supplier {
+  id              String         @id @default(cuid())
+  name            String
+  code            String
+  type            SupplierType
+  status          SupplierStatus @default(PENDING)
+  contactName     String?
+  contactEmail    String?
+  address         String?
+  qualityRating   Float?
+  lastAuditDate   DateTime?
+  nextAuditDate   DateTime?
+  organizationId  String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, code])
+  @@map("suppliers")
+}
+
+enum SupplierType {
+  COMPONENT
+  RAW_MATERIAL
+  SERVICE
+  CONTRACT_MANUFACTURER
+  STERILIZATION
+  CALIBRATION
+  PACKAGING
+}
+
+enum SupplierStatus {
+  PENDING
+  APPROVED
+  CONDITIONAL
+  DISQUALIFIED
+  INACTIVE
+}
+
+// ============================================================================
+// CHANGE CONTROL
+// ============================================================================
+
+model ChangeRequest {
+  id              String             @id @default(cuid())
+  changeNumber    String
+  title           String
+  description     String             @db.Text
+  type            ChangeType
+  impact          String?            @db.Text
+  status          ChangeRequestStatus @default(INITIATED)
+  requesterId     String
+  approverId      String?
+  priority        Priority           @default(MEDIUM)
+  implementedAt   DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  requester User  @relation("ChangeRequester", fields: [requesterId], references: [id])
+  approver  User? @relation("ChangeApprover", fields: [approverId], references: [id])
+
+  @@map("change_requests")
+}
+
+enum ChangeType {
+  DESIGN
+  PROCESS
+  DOCUMENT
+  SUPPLIER
+  MATERIAL
+  SOFTWARE
+  LABELING
+}
+
+enum ChangeRequestStatus {
+  INITIATED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  IMPLEMENTING
+  IMPLEMENTED
+  VERIFIED
+  CLOSED
+}
+
+// ============================================================================
+// CLINICAL DATA
+// ============================================================================
+
+model ClinicalEvaluation {
+  id             String                   @id @default(cuid())
+  title          String
+  type           ClinicalEvaluationType
+  status         ClinicalStatus           @default(PLANNING)
+  protocol       String?
+  startDate      DateTime?
+  endDate        DateTime?
+  subjectCount   Int?
+  summary        String?                  @db.Text
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  @@map("clinical_evaluations")
+}
+
+enum ClinicalEvaluationType {
+  CLINICAL_INVESTIGATION
+  LITERATURE_REVIEW
+  EQUIVALENCE
+  POST_MARKET_CLINICAL
+  REGISTRY_STUDY
+}
+
+enum ClinicalStatus {
+  PLANNING
+  ACTIVE
+  ENROLLING
+  COMPLETE
+  PUBLISHED
+}
