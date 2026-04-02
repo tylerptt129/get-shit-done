@@ -1,16 +1,25 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const health = {
+  return NextResponse.json({
     status: "healthy",
     timestamp: new Date().toISOString(),
-    version: "0.1.0",
+    version: "0.2.0",
     platform: "MedDev QMS",
+    stack: {
+      framework: "Next.js 14",
+      orm: "Drizzle ORM",
+      database: "PostgreSQL (postgres-js)",
+      auth: "Clerk",
+      ai: "OpenAI via Vercel AI SDK",
+      envValidation: "@t3-oss/env-nextjs",
+    },
     compliance: {
       iso13485: "2016",
       cfrPart820: true,
       iso14971: "2019",
       euMDR: "2017/745",
+      cfrPart11: true,
     },
     modules: {
       quality: { status: "active", endpoints: 4 },
@@ -22,8 +31,8 @@ export async function GET() {
       clinical: { status: "active", endpoints: 3 },
       training: { status: "active", endpoints: 3 },
       supplyChain: { status: "active", endpoints: 3 },
+      auditTrail: { status: "active", endpoints: 2 },
+      aiAssistant: { status: "active", endpoints: 2 },
     },
-  };
-
-  return NextResponse.json(health);
+  });
 }

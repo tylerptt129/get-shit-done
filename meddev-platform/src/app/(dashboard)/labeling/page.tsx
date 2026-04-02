@@ -1,72 +1,93 @@
 "use client";
 
-import { Tag, Plus, QrCode, FileText, CheckCircle2 } from "lucide-react";
 import { cn, getStatusColor } from "@/lib/utils";
+import {
+  Tag,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  FileText,
+} from "lucide-react";
+
+const summaryCards = [
+  { label: "Active Labels", value: 34, icon: Tag, color: "text-pink-600", bg: "bg-pink-50" },
+  { label: "Pending Review", value: 6, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
+  { label: "UDI Compliant", value: 28, icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" },
+  { label: "Requiring Update", value: 4, icon: AlertTriangle, color: "text-orange-600", bg: "bg-orange-50" },
+];
 
 const labels = [
-  { id: "LBL-001", product: "CardioSense Monitor", type: "DEVICE_LABEL", version: "2.1", status: "APPROVED", udi: "00850123456789", lot: "CS-2026-B12" },
-  { id: "LBL-002", product: "CardioSense Monitor", type: "IFU", version: "2.1", status: "IN_REVIEW", udi: "00850123456789", lot: "—" },
-  { id: "LBL-003", product: "OrthoFlex Implant", type: "DEVICE_LABEL", version: "1.0", status: "DRAFT", udi: "00850123456790", lot: "—" },
-  { id: "LBL-004", product: "DermaScan Pro", type: "OUTER_PACKAGING", version: "1.3", status: "APPROVED", udi: "00850123456791", lot: "DS-2026-B08" },
-  { id: "LBL-005", product: "NeuroStim Pulse", type: "UDI_LABEL", version: "1.0", status: "APPROVED", udi: "00850123456792", lot: "NS-2026-B06" },
-  { id: "LBL-006", product: "DermaScan Pro", type: "IFU", version: "3.0", status: "EFFECTIVE", udi: "00850123456791", lot: "—" },
+  { id: "LBL-001", product: "CardioSense Pro", udiDI: "(01)00850012345678", version: "Rev 3", market: "US / EU", status: "approved", lastUpdated: "Mar 10, 2026" },
+  { id: "LBL-002", product: "OrthoFlex Implant", udiDI: "(01)00850012345685", version: "Rev 2", market: "US / EU / CA", status: "approved", lastUpdated: "Feb 22, 2026" },
+  { id: "LBL-003", product: "NeuroStim Controller", udiDI: "(01)00850012345692", version: "Rev 4", market: "US", status: "in_review", lastUpdated: "Mar 28, 2026" },
+  { id: "LBL-004", product: "DermaScan Patch", udiDI: "(01)00850012345708", version: "Rev 1", market: "US / EU", status: "approved", lastUpdated: "Jan 15, 2026" },
+  { id: "LBL-005", product: "CardioSense Pro (IFU)", udiDI: "—", version: "Rev 3", market: "US / EU", status: "in_review", lastUpdated: "Mar 30, 2026" },
+  { id: "LBL-006", product: "OrthoFlex Implant (Sterile)", udiDI: "(01)00850012345715", version: "Rev 2", market: "EU", status: "draft", lastUpdated: "Apr 1, 2026" },
 ];
 
 const udiCompliance = [
-  { product: "CardioSense Monitor", gudid: "Registered", issuing: "GS1", diStatus: "Active", piStatus: "Active" },
-  { product: "OrthoFlex Implant", gudid: "Pending", issuing: "GS1", diStatus: "Pending", piStatus: "Not Started" },
-  { product: "DermaScan Pro", gudid: "Registered", issuing: "GS1", diStatus: "Active", piStatus: "Active" },
-  { product: "NeuroStim Pulse", gudid: "Registered", issuing: "GS1", diStatus: "Active", piStatus: "Active" },
+  { product: "CardioSense Pro", gudid: "Registered", accessGudid: "Published", eudamed: "Registered", status: "completed" },
+  { product: "OrthoFlex Implant", gudid: "Registered", accessGudid: "Published", eudamed: "Registered", status: "completed" },
+  { product: "NeuroStim Controller", gudid: "Registered", accessGudid: "Published", eudamed: "Pending", status: "in_progress" },
+  { product: "DermaScan Patch", gudid: "Registered", accessGudid: "Published", eudamed: "Registered", status: "completed" },
 ];
 
 export default function LabelingPage() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Tag className="h-7 w-7 text-pink-600" />
-            Labeling Management
-          </h1>
-          <p className="text-sm text-muted-foreground">UDI, IFU, Device Labels & Packaging — 21 CFR 801 / MDR Annex I</p>
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-pink-50 rounded-lg">
+          <Tag className="h-6 w-6 text-pink-600" />
         </div>
-        <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90">
-          <Plus className="h-4 w-4" /> New Label
-        </button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Labeling</h1>
+          <p className="text-sm text-gray-500">Label management, UDI compliance, and regulatory labeling</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        {[
-          { label: "Total Labels", value: "32", icon: Tag, color: "text-pink-600", bg: "bg-pink-50" },
-          { label: "UDI Registered", value: "3/4", icon: QrCode, color: "text-indigo-600", bg: "bg-indigo-50" },
-          { label: "IFUs Current", value: "8", icon: FileText, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Approved", value: "24", icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" },
-        ].map((s) => (
-          <div key={s.label} className="rounded-xl border bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className={cn("rounded-lg p-2", s.bg)}><s.icon className={cn("h-5 w-5", s.color)} /></div>
-              <div><p className="text-2xl font-bold">{s.value}</p><p className="text-xs text-muted-foreground">{s.label}</p></div>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {summaryCards.map((c) => (
+          <div key={c.label} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className={cn("p-2 rounded-lg w-fit", c.bg)}>
+              <c.icon className={cn("h-5 w-5", c.color)} />
             </div>
+            <p className="mt-3 text-2xl font-bold text-gray-900">{c.value}</p>
+            <p className="text-sm text-gray-500">{c.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm">
-        <div className="border-b p-4"><h2 className="font-semibold">Label Register</h2></div>
+      {/* Label Register */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Label Register</h2>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead><tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
-              <th className="p-3 font-medium">ID</th><th className="p-3 font-medium">Product</th><th className="p-3 font-medium">Type</th><th className="p-3 font-medium">Version</th><th className="p-3 font-medium">UDI-DI</th><th className="p-3 font-medium">Status</th>
-            </tr></thead>
-            <tbody className="divide-y">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 text-left text-gray-500">
+                <th className="pb-3 font-medium">Label ID</th>
+                <th className="pb-3 font-medium">Product</th>
+                <th className="pb-3 font-medium">UDI-DI</th>
+                <th className="pb-3 font-medium">Version</th>
+                <th className="pb-3 font-medium">Market</th>
+                <th className="pb-3 font-medium">Status</th>
+                <th className="pb-3 font-medium">Last Updated</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
               {labels.map((l) => (
-                <tr key={l.id} className="hover:bg-muted/30">
-                  <td className="p-3 text-sm font-medium text-primary">{l.id}</td>
-                  <td className="p-3 text-sm">{l.product}</td>
-                  <td className="p-3 text-xs">{l.type.replace(/_/g, " ")}</td>
-                  <td className="p-3 text-sm font-mono">{l.version}</td>
-                  <td className="p-3 text-xs font-mono text-muted-foreground">{l.udi}</td>
-                  <td className="p-3"><span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", getStatusColor(l.status))}>{l.status.replace(/_/g, " ")}</span></td>
+                <tr key={l.id} className="hover:bg-gray-50">
+                  <td className="py-3 font-mono text-xs text-pink-600">{l.id}</td>
+                  <td className="py-3 text-gray-800">{l.product}</td>
+                  <td className="py-3 font-mono text-xs text-gray-600">{l.udiDI}</td>
+                  <td className="py-3 text-gray-600">{l.version}</td>
+                  <td className="py-3 text-gray-600">{l.market}</td>
+                  <td className="py-3">
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getStatusColor(l.status))}>
+                      {l.status.replace(/_/g, " ")}
+                    </span>
+                  </td>
+                  <td className="py-3 text-gray-600 whitespace-nowrap">{l.lastUpdated}</td>
                 </tr>
               ))}
             </tbody>
@@ -74,21 +95,42 @@ export default function LabelingPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm">
-        <div className="border-b p-4"><h2 className="font-semibold">UDI Compliance Status</h2></div>
+      {/* UDI Compliance Status */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <FileText className="h-5 w-5 text-gray-400" /> UDI Compliance Status
+        </h2>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead><tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
-              <th className="p-3 font-medium">Product</th><th className="p-3 font-medium">GUDID</th><th className="p-3 font-medium">Issuing Agency</th><th className="p-3 font-medium">DI Status</th><th className="p-3 font-medium">PI Status</th>
-            </tr></thead>
-            <tbody className="divide-y">
-              {udiCompliance.map((u, i) => (
-                <tr key={i} className="hover:bg-muted/30">
-                  <td className="p-3 text-sm font-medium">{u.product}</td>
-                  <td className="p-3"><span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", u.gudid === "Registered" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700")}>{u.gudid}</span></td>
-                  <td className="p-3 text-sm">{u.issuing}</td>
-                  <td className="p-3"><span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", u.diStatus === "Active" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700")}>{u.diStatus}</span></td>
-                  <td className="p-3"><span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", u.piStatus === "Active" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700")}>{u.piStatus}</span></td>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 text-left text-gray-500">
+                <th className="pb-3 font-medium">Product</th>
+                <th className="pb-3 font-medium">GUDID</th>
+                <th className="pb-3 font-medium">AccessGUDID</th>
+                <th className="pb-3 font-medium">EUDAMED</th>
+                <th className="pb-3 font-medium">Overall</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {udiCompliance.map((u) => (
+                <tr key={u.product} className="hover:bg-gray-50">
+                  <td className="py-3 font-medium text-gray-900">{u.product}</td>
+                  <td className="py-3">
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-800">{u.gudid}</span>
+                  </td>
+                  <td className="py-3">
+                    <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-800">{u.accessGudid}</span>
+                  </td>
+                  <td className="py-3">
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", u.eudamed === "Registered" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800")}>
+                      {u.eudamed}
+                    </span>
+                  </td>
+                  <td className="py-3">
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getStatusColor(u.status))}>
+                      {u.status.replace(/_/g, " ")}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>

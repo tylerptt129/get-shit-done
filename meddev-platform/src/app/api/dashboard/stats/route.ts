@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 
-// Dashboard stats endpoint - returns current QMS metrics
-// In production, these would come from Prisma queries against the database
 export async function GET() {
-  const stats = {
+  return NextResponse.json({
     summary: {
       openCAPAs: 12,
       pendingApprovals: 8,
@@ -21,13 +19,6 @@ export async function GET() {
       supplierQuality: { score: 96, target: 90 },
       auditReadiness: { score: 87, target: 90 },
     },
-    trends: {
-      capasOpenedThisMonth: 4,
-      capasClosedThisMonth: 5,
-      complaintsThisMonth: 3,
-      ncrsThisMonth: 6,
-      documentsApproved: 12,
-    },
     riskMatrix: {
       unacceptable: 0,
       high: 3,
@@ -35,15 +26,11 @@ export async function GET() {
       low: 12,
       negligible: 5,
     },
-    upcomingDeadlines: [
-      { title: "Internal Audit - Production Floor", date: "2026-04-05", department: "Quality", priority: "HIGH" },
-      { title: "510(k) Submission - OrthoFlex", date: "2026-04-10", department: "Regulatory", priority: "CRITICAL" },
-      { title: "Design Review Gate 3 - NeuroStim", date: "2026-04-12", department: "Design", priority: "HIGH" },
-      { title: "Supplier Requalification - BioPlast", date: "2026-04-15", department: "Supply Chain", priority: "MEDIUM" },
-      { title: "Annual Management Review", date: "2026-04-20", department: "Quality", priority: "HIGH" },
-    ],
+    aiUsage: {
+      totalCalls: 142,
+      totalTokens: 584200,
+      estimatedCost: "$4.27",
+    },
     generatedAt: new Date().toISOString(),
-  };
-
-  return NextResponse.json(stats);
+  });
 }

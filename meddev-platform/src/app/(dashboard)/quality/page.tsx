@@ -1,97 +1,103 @@
 "use client";
 
-import { Shield, Plus, Filter, AlertTriangle, CheckCircle2, Clock, FileWarning } from "lucide-react";
 import { cn, getStatusColor } from "@/lib/utils";
+import {
+  Shield,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  MessageSquareWarning,
+  CalendarCheck,
+  FileWarning,
+} from "lucide-react";
+
+const summaryCards = [
+  { label: "Open CAPAs", value: 12, icon: AlertCircle, color: "text-red-600", bg: "bg-red-50" },
+  { label: "Closed This Month", value: 5, icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" },
+  { label: "Overdue Actions", value: 3, icon: Clock, color: "text-orange-600", bg: "bg-orange-50" },
+  { label: "Open Complaints", value: 7, icon: MessageSquareWarning, color: "text-yellow-600", bg: "bg-yellow-50" },
+];
 
 const capas = [
-  { id: "CAPA-2026-041", title: "Biocompatibility test failure - Lot 2026-B12", type: "CORRECTIVE", status: "INVESTIGATING", priority: "CRITICAL", owner: "Sarah Chen", due: "Apr 8, 2026" },
-  { id: "CAPA-2026-040", title: "Supplier material deviation - silicone grade", type: "PREVENTIVE", status: "ACTION_PLANNED", priority: "HIGH", owner: "James Kim", due: "Apr 15, 2026" },
-  { id: "CAPA-2026-039", title: "Labeling error on IFU revision", type: "CORRECTIVE", status: "CLOSED", priority: "MEDIUM", owner: "Lisa Wang", due: "Mar 28, 2026" },
-  { id: "CAPA-2026-038", title: "Sterilization cycle parameter drift", type: "BOTH", status: "EFFECTIVENESS_CHECK", priority: "HIGH", owner: "Dr. Patel", due: "Apr 20, 2026" },
-  { id: "CAPA-2026-037", title: "Assembly fixture calibration gap", type: "PREVENTIVE", status: "ACTION_IMPLEMENTED", priority: "MEDIUM", owner: "Mike Johnson", due: "Apr 5, 2026" },
+  { id: "CAPA-2026-041", title: "Sterility assurance failure — Lot B-0315", type: "Corrective", status: "investigating", priority: "high", owner: "Dr. Sarah Chen", due: "Apr 15, 2026" },
+  { id: "CAPA-2026-040", title: "Label misprint on CardioSense Pro packaging", type: "Corrective", status: "action_planned", priority: "medium", owner: "Amy Rodriguez", due: "Apr 20, 2026" },
+  { id: "CAPA-2026-039", title: "OrthoFlex fatigue test deviation", type: "Preventive", status: "effectiveness_check", priority: "high", owner: "Mark Thompson", due: "Apr 4, 2026" },
+  { id: "CAPA-2026-038", title: "Supplier nonconformance — raw material spec", type: "Corrective", status: "action_implemented", priority: "medium", owner: "James Wilson", due: "Apr 25, 2026" },
+  { id: "CAPA-2026-037", title: "Software validation gap in NeuroStim firmware", type: "Preventive", status: "investigating", priority: "critical", owner: "Lisa Park", due: "Apr 8, 2026" },
 ];
 
-const auditSchedule = [
-  { title: "Internal Audit - Production Floor", date: "Apr 5, 2026", type: "INTERNAL", status: "PLANNED" },
-  { title: "FDA Inspection Readiness", date: "Apr 18, 2026", type: "REGULATORY", status: "PLANNED" },
-  { title: "ISO 13485 Surveillance - TUV", date: "May 10, 2026", type: "CERTIFICATION", status: "PLANNED" },
+const upcomingAudits = [
+  { id: 1, name: "Internal Audit — Sterilization Department", date: "Apr 10, 2026", auditor: "James Wilson", type: "Internal" },
+  { id: 2, name: "Notified Body Surveillance Audit", date: "May 3, 2026", auditor: "TUV SUD", type: "External" },
+  { id: 3, name: "Supplier Audit — MedTech Components Ltd", date: "May 15, 2026", auditor: "Dr. Sarah Chen", type: "Supplier" },
 ];
 
-const complaints = [
-  { id: "CMP-2026-015", title: "Device malfunction during use", severity: "HIGH", reportable: true, status: "UNDER_INVESTIGATION" },
-  { id: "CMP-2026-014", title: "Packaging seal integrity concern", severity: "MEDIUM", reportable: false, status: "RECEIVED" },
-  { id: "CMP-2026-013", title: "Connector intermittent failure", severity: "HIGH", reportable: true, status: "DETERMINED_REPORTABLE" },
+const recentComplaints = [
+  { id: "CMP-2026-112", title: "Patient reported skin irritation — DermaScan Patch", date: "Mar 30, 2026", mdr: true, status: "open" },
+  { id: "CMP-2026-111", title: "Device malfunction during calibration — CardioSense", date: "Mar 28, 2026", mdr: true, status: "investigating" },
+  { id: "CMP-2026-110", title: "Packaging damage during shipping — OrthoFlex Kit", date: "Mar 25, 2026", mdr: false, status: "in_progress" },
 ];
 
 export default function QualityPage() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Shield className="h-7 w-7 text-blue-600" />
-            Quality Management
-          </h1>
-          <p className="text-sm text-muted-foreground">CAPAs, Audits, Complaints & Nonconformances — ISO 13485 Section 8</p>
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-blue-50 rounded-lg">
+          <Shield className="h-6 w-6 text-blue-600" />
         </div>
-        <button className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90">
-          <Plus className="h-4 w-4" /> New CAPA
-        </button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Quality Management</h1>
+          <p className="text-sm text-gray-500">CAPAs, audits, complaints, and quality events</p>
+        </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        {[
-          { label: "Open CAPAs", value: "12", icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
-          { label: "Closed This Month", value: "5", icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" },
-          { label: "Overdue Actions", value: "3", icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-          { label: "Open Complaints", value: "7", icon: FileWarning, color: "text-purple-600", bg: "bg-purple-50" },
-        ].map((s) => (
-          <div key={s.label} className="rounded-xl border bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className={cn("rounded-lg p-2", s.bg)}>
-                <s.icon className={cn("h-5 w-5", s.color)} />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{s.value}</p>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
-              </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {summaryCards.map((c) => (
+          <div key={c.label} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className={cn("p-2 rounded-lg w-fit", c.bg)}>
+              <c.icon className={cn("h-5 w-5", c.color)} />
             </div>
+            <p className="mt-3 text-2xl font-bold text-gray-900">{c.value}</p>
+            <p className="text-sm text-gray-500">{c.label}</p>
           </div>
         ))}
       </div>
 
-      {/* CAPA Table */}
-      <div className="rounded-xl border bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b p-4">
-          <h2 className="font-semibold">Active CAPAs</h2>
-          <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-            <Filter className="h-3.5 w-3.5" /> Filter
-          </button>
-        </div>
+      {/* Active CAPAs Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Active CAPAs</h2>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full text-sm">
             <thead>
-              <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
-                <th className="p-3 font-medium">CAPA #</th>
-                <th className="p-3 font-medium">Title</th>
-                <th className="p-3 font-medium">Type</th>
-                <th className="p-3 font-medium">Status</th>
-                <th className="p-3 font-medium">Priority</th>
-                <th className="p-3 font-medium">Owner</th>
-                <th className="p-3 font-medium">Due Date</th>
+              <tr className="border-b border-gray-200 text-left text-gray-500">
+                <th className="pb-3 font-medium">#</th>
+                <th className="pb-3 font-medium">Title</th>
+                <th className="pb-3 font-medium">Type</th>
+                <th className="pb-3 font-medium">Status</th>
+                <th className="pb-3 font-medium">Priority</th>
+                <th className="pb-3 font-medium">Owner</th>
+                <th className="pb-3 font-medium">Due</th>
               </tr>
             </thead>
-            <tbody className="divide-y">
+            <tbody className="divide-y divide-gray-100">
               {capas.map((c) => (
-                <tr key={c.id} className="hover:bg-muted/30">
-                  <td className="p-3 text-sm font-medium text-primary">{c.id}</td>
-                  <td className="p-3 text-sm">{c.title}</td>
-                  <td className="p-3"><span className="text-xs">{c.type}</span></td>
-                  <td className="p-3"><span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", getStatusColor(c.status))}>{c.status.replace(/_/g, " ")}</span></td>
-                  <td className="p-3"><span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", getStatusColor(c.priority))}>{c.priority}</span></td>
-                  <td className="p-3 text-sm text-muted-foreground">{c.owner}</td>
-                  <td className="p-3 text-sm text-muted-foreground">{c.due}</td>
+                <tr key={c.id} className="hover:bg-gray-50">
+                  <td className="py-3 font-mono text-xs text-blue-600">{c.id}</td>
+                  <td className="py-3 text-gray-800 max-w-xs truncate">{c.title}</td>
+                  <td className="py-3 text-gray-600">{c.type}</td>
+                  <td className="py-3">
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getStatusColor(c.status))}>
+                      {c.status.replace(/_/g, " ")}
+                    </span>
+                  </td>
+                  <td className="py-3">
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getStatusColor(c.priority))}>
+                      {c.priority}
+                    </span>
+                  </td>
+                  <td className="py-3 text-gray-600">{c.owner}</td>
+                  <td className="py-3 text-gray-600 whitespace-nowrap">{c.due}</td>
                 </tr>
               ))}
             </tbody>
@@ -99,37 +105,50 @@ export default function QualityPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Audit Schedule */}
-        <div className="rounded-xl border bg-white shadow-sm">
-          <div className="border-b p-4"><h2 className="font-semibold">Upcoming Audits</h2></div>
-          <div className="divide-y">
-            {auditSchedule.map((a, i) => (
-              <div key={i} className="flex items-center justify-between p-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Upcoming Audits */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <CalendarCheck className="h-5 w-5 text-gray-400" /> Upcoming Audits
+          </h2>
+          <div className="space-y-4">
+            {upcomingAudits.map((a) => (
+              <div key={a.id} className="flex items-start justify-between gap-3 pb-3 border-b border-gray-100 last:border-0">
                 <div>
-                  <p className="text-sm font-medium">{a.title}</p>
-                  <p className="text-xs text-muted-foreground">{a.date} &middot; {a.type}</p>
+                  <p className="text-sm font-medium text-gray-800">{a.name}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{a.auditor} &middot; {a.date}</p>
                 </div>
-                <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", getStatusColor(a.status))}>{a.status}</span>
+                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getStatusColor(a.type === "External" ? "high" : a.type === "Supplier" ? "medium" : "low"))}>
+                  {a.type}
+                </span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Complaints */}
-        <div className="rounded-xl border bg-white shadow-sm">
-          <div className="border-b p-4"><h2 className="font-semibold">Recent Complaints</h2></div>
-          <div className="divide-y">
-            {complaints.map((c) => (
-              <div key={c.id} className="flex items-center justify-between p-4">
-                <div>
-                  <p className="text-sm font-medium">{c.id}: {c.title}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", getStatusColor(c.severity))}>{c.severity}</span>
-                    {c.reportable && <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">MDR Reportable</span>}
+        {/* Recent Complaints */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <FileWarning className="h-5 w-5 text-gray-400" /> Recent Complaints
+          </h2>
+          <div className="space-y-4">
+            {recentComplaints.map((c) => (
+              <div key={c.id} className="pb-3 border-b border-gray-100 last:border-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-blue-600">{c.id}</span>
+                      {c.mdr && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-medium">MDR Reportable</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-800 mt-1">{c.title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{c.date}</p>
                   </div>
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap", getStatusColor(c.status))}>
+                    {c.status.replace(/_/g, " ")}
+                  </span>
                 </div>
-                <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", getStatusColor(c.status))}>{c.status.replace(/_/g, " ")}</span>
               </div>
             ))}
           </div>

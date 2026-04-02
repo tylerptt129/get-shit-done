@@ -1,66 +1,93 @@
 "use client";
 
-import { Stethoscope, FileText, Users, Activity, Clock } from "lucide-react";
 import { cn, getStatusColor } from "@/lib/utils";
+import {
+  Stethoscope,
+  FileText,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  CalendarCheck,
+} from "lucide-react";
+
+const summaryCards = [
+  { label: "Active Evaluations", value: 5, icon: Stethoscope, color: "text-red-600", bg: "bg-red-50" },
+  { label: "Pending PMCF", value: 3, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
+  { label: "Completed Studies", value: 8, icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" },
+  { label: "Adverse Events", value: 2, icon: AlertTriangle, color: "text-orange-600", bg: "bg-orange-50" },
+];
 
 const evaluations = [
-  { id: "CER-001", title: "CardioSense v2 Clinical Evaluation", type: "CLINICAL_INVESTIGATION", status: "ACTIVE", subjects: 120, start: "Jan 2026", end: "Jul 2026" },
-  { id: "CER-002", title: "OrthoFlex Literature Review", type: "LITERATURE_REVIEW", status: "COMPLETE", subjects: null, start: "Oct 2025", end: "Feb 2026" },
-  { id: "CER-003", title: "NeuroStim Equivalence Study", type: "EQUIVALENCE", status: "PLANNING", subjects: null, start: "May 2026", end: "—" },
-  { id: "CER-004", title: "DermaScan Post-Market Clinical Follow-up", type: "POST_MARKET_CLINICAL", status: "ACTIVE", subjects: 500, start: "Mar 2025", end: "Mar 2027" },
-  { id: "CER-005", title: "CardioSense Registry Study", type: "REGISTRY_STUDY", status: "ENROLLING", subjects: 45, start: "Feb 2026", end: "Feb 2028" },
+  { id: "CER-2026-001", product: "CardioSense Pro", type: "Clinical Evaluation Report", status: "in_progress", author: "Dr. Sarah Chen", dueDate: "Jun 30, 2026", lastUpdated: "Mar 28, 2026" },
+  { id: "CER-2026-002", product: "OrthoFlex Implant v2", type: "Clinical Evaluation Report", status: "in_review", author: "Dr. Emily Watson", dueDate: "May 15, 2026", lastUpdated: "Mar 25, 2026" },
+  { id: "PMCF-2026-001", product: "DermaScan Patch", type: "PMCF Plan", status: "approved", author: "Dr. Michael Ross", dueDate: "—", lastUpdated: "Feb 10, 2026" },
+  { id: "PMCF-2026-002", product: "NeuroStim Controller", type: "PMCF Report", status: "in_progress", author: "Dr. Sarah Chen", dueDate: "Jul 15, 2026", lastUpdated: "Mar 30, 2026" },
+  { id: "LIT-2026-001", product: "CardioSense Pro", type: "Literature Review", status: "completed", author: "Dr. Emily Watson", dueDate: "—", lastUpdated: "Mar 15, 2026" },
 ];
 
 const milestones = [
-  { evaluation: "CER-001", milestone: "Interim analysis (50% enrollment)", date: "Apr 15, 2026", status: "PENDING" },
-  { evaluation: "CER-003", milestone: "Protocol finalization", date: "Apr 20, 2026", status: "IN_PROGRESS" },
-  { evaluation: "CER-004", milestone: "Annual PMCF report", date: "Mar 2026", status: "COMPLETED" },
-  { evaluation: "CER-005", milestone: "Site initiation visit #3", date: "Apr 8, 2026", status: "PENDING" },
+  { id: 1, title: "CardioSense Pro CER — Submit to Notified Body", date: "Jun 30, 2026", status: "in_progress", daysRemaining: 89 },
+  { id: 2, title: "OrthoFlex PMCF Study — Patient enrollment complete", date: "May 20, 2026", status: "in_progress", daysRemaining: 48 },
+  { id: 3, title: "DermaScan Patch — Annual PMCF Update Report", date: "Aug 1, 2026", status: "planned", daysRemaining: 121 },
+  { id: 4, title: "NeuroStim Controller — Clinical Investigation Protocol Final", date: "Apr 25, 2026", status: "in_progress", daysRemaining: 23 },
 ];
 
 export default function ClinicalPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Stethoscope className="h-7 w-7 text-red-600" />
-          Clinical Affairs
-        </h1>
-        <p className="text-sm text-muted-foreground">Clinical Evaluations, Investigations & Post-Market Surveillance</p>
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-red-50 rounded-lg">
+          <Stethoscope className="h-6 w-6 text-red-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Clinical</h1>
+          <p className="text-sm text-gray-500">Clinical evaluations, PMCF, and post-market surveillance</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        {[
-          { label: "Active Studies", value: "3", icon: Activity, color: "text-red-600", bg: "bg-red-50" },
-          { label: "Total Subjects", value: "665", icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Pending Milestones", value: "4", icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-          { label: "Reports Due", value: "1", icon: FileText, color: "text-purple-600", bg: "bg-purple-50" },
-        ].map((s) => (
-          <div key={s.label} className="rounded-xl border bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className={cn("rounded-lg p-2", s.bg)}><s.icon className={cn("h-5 w-5", s.color)} /></div>
-              <div><p className="text-2xl font-bold">{s.value}</p><p className="text-xs text-muted-foreground">{s.label}</p></div>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {summaryCards.map((c) => (
+          <div key={c.label} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className={cn("p-2 rounded-lg w-fit", c.bg)}>
+              <c.icon className={cn("h-5 w-5", c.color)} />
             </div>
+            <p className="mt-3 text-2xl font-bold text-gray-900">{c.value}</p>
+            <p className="text-sm text-gray-500">{c.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm">
-        <div className="border-b p-4"><h2 className="font-semibold">Clinical Evaluations</h2></div>
+      {/* Clinical Evaluations Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Clinical Evaluations</h2>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead><tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
-              <th className="p-3 font-medium">ID</th><th className="p-3 font-medium">Title</th><th className="p-3 font-medium">Type</th><th className="p-3 font-medium">Subjects</th><th className="p-3 font-medium">Timeline</th><th className="p-3 font-medium">Status</th>
-            </tr></thead>
-            <tbody className="divide-y">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 text-left text-gray-500">
+                <th className="pb-3 font-medium">ID</th>
+                <th className="pb-3 font-medium">Product</th>
+                <th className="pb-3 font-medium">Type</th>
+                <th className="pb-3 font-medium">Status</th>
+                <th className="pb-3 font-medium">Author</th>
+                <th className="pb-3 font-medium">Due Date</th>
+                <th className="pb-3 font-medium">Last Updated</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
               {evaluations.map((e) => (
-                <tr key={e.id} className="hover:bg-muted/30">
-                  <td className="p-3 text-sm font-medium text-primary">{e.id}</td>
-                  <td className="p-3 text-sm">{e.title}</td>
-                  <td className="p-3 text-xs">{e.type.replace(/_/g, " ")}</td>
-                  <td className="p-3 text-sm">{e.subjects ?? "—"}</td>
-                  <td className="p-3 text-xs text-muted-foreground">{e.start} — {e.end}</td>
-                  <td className="p-3"><span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", getStatusColor(e.status))}>{e.status}</span></td>
+                <tr key={e.id} className="hover:bg-gray-50">
+                  <td className="py-3 font-mono text-xs text-red-600">{e.id}</td>
+                  <td className="py-3 text-gray-800">{e.product}</td>
+                  <td className="py-3 text-gray-600">{e.type}</td>
+                  <td className="py-3">
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getStatusColor(e.status))}>
+                      {e.status.replace(/_/g, " ")}
+                    </span>
+                  </td>
+                  <td className="py-3 text-gray-600">{e.author}</td>
+                  <td className="py-3 text-gray-600 whitespace-nowrap">{e.dueDate}</td>
+                  <td className="py-3 text-gray-600 whitespace-nowrap">{e.lastUpdated}</td>
                 </tr>
               ))}
             </tbody>
@@ -68,16 +95,21 @@ export default function ClinicalPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm">
-        <div className="border-b p-4"><h2 className="font-semibold">Upcoming Milestones</h2></div>
-        <div className="divide-y">
-          {milestones.map((m, i) => (
-            <div key={i} className="flex items-center justify-between p-4 hover:bg-muted/30">
+      {/* Upcoming Milestones */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <CalendarCheck className="h-5 w-5 text-gray-400" /> Upcoming Milestones
+        </h2>
+        <div className="space-y-4">
+          {milestones.map((m) => (
+            <div key={m.id} className="flex items-start justify-between gap-3 pb-3 border-b border-gray-100 last:border-0">
               <div>
-                <p className="text-sm font-medium">{m.milestone}</p>
-                <p className="text-xs text-muted-foreground">{m.evaluation} &middot; {m.date}</p>
+                <p className="text-sm font-medium text-gray-800">{m.title}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{m.date} &middot; {m.daysRemaining} days remaining</p>
               </div>
-              <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", getStatusColor(m.status))}>{m.status}</span>
+              <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap", getStatusColor(m.status))}>
+                {m.status.replace(/_/g, " ")}
+              </span>
             </div>
           ))}
         </div>

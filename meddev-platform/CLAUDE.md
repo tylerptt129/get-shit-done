@@ -2,51 +2,53 @@
 
 ## Project Overview
 FDA/ISO 13485-compliant Quality Management System platform for medical device companies.
-Built with Next.js 14, TypeScript, Tailwind CSS, Prisma ORM, and PostgreSQL.
+Built with Next.js 14, TypeScript, Tailwind CSS, Drizzle ORM, and PostgreSQL.
 
 ## Architecture
 - **Framework**: Next.js 14 App Router
-- **Database**: PostgreSQL with Prisma ORM
+- **Database**: PostgreSQL with Drizzle ORM + postgres-js driver
+- **Auth**: Clerk (multi-tenant with organization support)
+- **AI**: Vercel AI SDK + OpenAI with token/cost tracking
+- **Env Validation**: @t3-oss/env-nextjs
 - **Styling**: Tailwind CSS with Radix UI primitives
 - **Language**: TypeScript (strict mode)
 
 ## Key Directories
 - `src/app/(dashboard)/` — Dashboard route group with shared layout
-- `src/app/(dashboard)/[department]/` — Department-specific pages
+- `src/app/api/` — API routes (health, stats, webhooks)
 - `src/components/layout/` — Sidebar, header, shared layout components
-- `src/components/ui/` — Reusable UI components (shadcn/ui pattern)
-- `src/lib/` — Utilities, database client, helpers
-- `prisma/` — Database schema and migrations
+- `src/components/dashboard/` — Dashboard-specific widgets
+- `src/server/db/schema/` — Drizzle ORM schema (13 files, all tenant-scoped)
+- `src/server/services/` — Audit log, AI usage tracking
+- `src/lib/` — Utilities
+- `drizzle/` — SQL migrations (includes audit immutability trigger)
+
+## Multi-Tenancy
+- Every table has `tenant_id` column
+- RLS policies enforce tenant isolation via `SET app.current_tenant_id`
+- Clerk webhook auto-creates tenant on `organization.created`
+- `withTenant()` helper in `src/server/db/index.ts`
 
 ## Regulatory Context
-This platform manages compliance with:
 - **ISO 13485:2016** — QMS for Medical Devices
 - **21 CFR Part 820** — FDA Quality System Regulation
 - **ISO 14971** — Risk Management
 - **EU MDR 2017/745** — Medical Device Regulation
-- **21 CFR Part 11** — Electronic Records & Signatures
-
-## Departments
-1. Quality Management — CAPAs, audits, nonconformances, complaints
-2. Regulatory Affairs — Submissions, compliance tracking
-3. Design Controls — Design inputs/outputs, reviews, V&V
-4. Production — Manufacturing, NCRs, batch records
-5. Document Control — SOPs, work instructions, approvals
-6. Labeling — UDI, IFU, device labels, compliance
-7. Clinical — Evaluations, investigations, post-market
-8. Training — Competency tracking, SOP training records
-9. Supply Chain — Supplier qualification, audits, materials
+- **21 CFR Part 11** — Electronic Records & Signatures (audit trail)
 
 ## Commands
 - `npm run dev` — Start development server
 - `npm run build` — Production build
-- `npm run db:generate` — Generate Prisma client
+- `npm run db:generate` — Generate Drizzle migrations
 - `npm run db:push` — Push schema to database
-- `npm run db:migrate` — Run migrations
-- `npm run db:studio` — Open Prisma Studio
+- `npm run db:migrate` — Run Drizzle migrations
+- `npm run db:studio` — Open Drizzle Studio
+- `npm run db:seed` — Seed demo data
+- `npm run typecheck` — TypeScript type checking
 
 ## Code Style
 - Use TypeScript strict mode
 - Prefer server components; use 'use client' only when needed
-- Follow existing patterns in the codebase
-- All database queries go through Prisma client in `src/lib/db.ts`
+- All database queries go through Drizzle client in `src/server/db/index.ts`
+- Always scope queries by tenant_id
+- Track all AI usage with token counts and cost

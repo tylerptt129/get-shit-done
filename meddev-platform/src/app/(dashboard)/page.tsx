@@ -1,232 +1,101 @@
 "use client";
 
-import {
-  Shield,
-  FileCheck,
-  AlertTriangle,
-  Clock,
-  CheckCircle2,
-  FileText,
-  TrendingUp,
-  Users,
-  Activity,
-  ArrowUpRight,
-  ArrowDownRight,
-} from "lucide-react";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, getStatusColor } from "@/lib/utils";
 import { SystemStatus } from "@/components/dashboard/system-status";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  FileText,
+  TrendingDown,
+  TrendingUp,
+  Activity,
+  ShieldAlert,
+  CalendarClock,
+} from "lucide-react";
 
 const stats = [
-  {
-    label: "Open CAPAs",
-    value: "12",
-    change: "-2",
-    trend: "down",
-    icon: Shield,
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-    href: "/quality",
-  },
-  {
-    label: "Pending Approvals",
-    value: "8",
-    change: "+3",
-    trend: "up",
-    icon: FileCheck,
-    color: "text-purple-600",
-    bg: "bg-purple-50",
-    href: "/documents",
-  },
-  {
-    label: "Overdue Items",
-    value: "5",
-    change: "+1",
-    trend: "up",
-    icon: AlertTriangle,
-    color: "text-red-600",
-    bg: "bg-red-50",
-    href: "/quality",
-  },
-  {
-    label: "Active Submissions",
-    value: "3",
-    change: "0",
-    trend: "neutral",
-    icon: FileText,
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
-    href: "/regulatory",
-  },
+  { label: "Open CAPAs", value: 12, trend: -2, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
+  { label: "Pending Approvals", value: 8, trend: 3, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
+  { label: "Overdue Items", value: 5, trend: 1, icon: ShieldAlert, color: "text-orange-600", bg: "bg-orange-50" },
+  { label: "Active Submissions", value: 3, trend: 0, icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
 ];
 
 const recentActivity = [
-  {
-    action: "CAPA-2026-039 closed",
-    user: "Sarah Chen",
-    time: "30 min ago",
-    type: "success",
-  },
-  {
-    action: "SOP-QA-015 submitted for review",
-    user: "Mike Johnson",
-    time: "1 hour ago",
-    type: "info",
-  },
-  {
-    action: "Supplier audit completed - TechMed Corp",
-    user: "Lisa Wang",
-    time: "2 hours ago",
-    type: "success",
-  },
-  {
-    action: "NCR-2026-087 escalated to CAPA",
-    user: "James Kim",
-    time: "3 hours ago",
-    type: "warning",
-  },
-  {
-    action: "Design review scheduled - CardioSense v2",
-    user: "Dr. Patel",
-    time: "4 hours ago",
-    type: "info",
-  },
-  {
-    action: "Training overdue: 3 employees",
-    user: "HR System",
-    time: "5 hours ago",
-    type: "warning",
-  },
-];
-
-const upcomingTasks = [
-  {
-    title: "Internal Audit - Production Floor",
-    due: "Apr 5, 2026",
-    priority: "HIGH",
-    department: "Quality",
-  },
-  {
-    title: "510(k) Submission - OrthoFlex",
-    due: "Apr 10, 2026",
-    priority: "CRITICAL",
-    department: "Regulatory",
-  },
-  {
-    title: "Design Review Gate 3 - NeuroStim",
-    due: "Apr 12, 2026",
-    priority: "HIGH",
-    department: "Design",
-  },
-  {
-    title: "Supplier Requalification - BioPlast Ltd",
-    due: "Apr 15, 2026",
-    priority: "MEDIUM",
-    department: "Supply Chain",
-  },
-  {
-    title: "Annual Management Review",
-    due: "Apr 20, 2026",
-    priority: "HIGH",
-    department: "Quality",
-  },
+  { id: 1, text: "CAPA-2026-041 escalated to High priority", time: "12 min ago", dot: "bg-red-500" },
+  { id: 2, text: "SOP-QA-012 Rev 4 approved by Quality Director", time: "28 min ago", dot: "bg-green-500" },
+  { id: 3, text: "NCR-2026-088 created for Lot B-2026-0315", time: "1 hr ago", dot: "bg-yellow-500" },
+  { id: 4, text: "FDA 510(k) K263201 submission acknowledged", time: "2 hr ago", dot: "bg-blue-500" },
+  { id: 5, text: "Supplier audit for MedTech Components completed", time: "3 hr ago", dot: "bg-purple-500" },
+  { id: 6, text: "Training record updated for J. Martinez — GMP Module", time: "4 hr ago", dot: "bg-gray-500" },
 ];
 
 const complianceMetrics = [
-  { label: "Document Control", score: 94, target: 95 },
-  { label: "CAPA Effectiveness", score: 88, target: 90 },
-  { label: "Training Compliance", score: 91, target: 95 },
-  { label: "Supplier Quality", score: 96, target: 90 },
-  { label: "Audit Readiness", score: 87, target: 90 },
+  { label: "CAPA On-Time Closure", value: 88, target: 95 },
+  { label: "Document Review Cycle", value: 92, target: 90 },
+  { label: "Training Compliance", value: 96, target: 95 },
+  { label: "Supplier Qualification", value: 85, target: 90 },
+  { label: "Complaint Processing", value: 91, target: 90 },
+];
+
+const riskOverview = [
+  { level: "Unacceptable", count: 0, color: "bg-red-600" },
+  { level: "High", count: 3, color: "bg-orange-500" },
+  { level: "Medium", count: 8, color: "bg-yellow-500" },
+  { level: "Low", count: 12, color: "bg-green-500" },
+  { level: "Negligible", count: 5, color: "bg-gray-400" },
+];
+
+const upcomingTasks = [
+  { id: 1, task: "Complete CAPA-2026-039 effectiveness check", due: "Apr 4, 2026", priority: "high", assignee: "Dr. Sarah Chen" },
+  { id: 2, task: "Review DHF for OrthoFlex Implant v2.1", due: "Apr 5, 2026", priority: "medium", assignee: "Mark Thompson" },
+  { id: 3, task: "Submit EU MDR Technical Documentation", due: "Apr 7, 2026", priority: "critical", assignee: "Lisa Park" },
+  { id: 4, task: "Conduct internal audit — Sterilization Dept", due: "Apr 10, 2026", priority: "medium", assignee: "James Wilson" },
+  { id: 5, task: "Approve revised labeling for CardioSense Pro", due: "Apr 12, 2026", priority: "low", assignee: "Amy Rodriguez" },
 ];
 
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">
-          QMS Command Center
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Medical Device Quality Management System — Real-time compliance
-          overview
-        </p>
+        <h1 className="text-2xl font-bold text-gray-900">QMS Command Center</h1>
+        <p className="text-sm text-gray-500 mt-1">Real-time quality management overview</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <Link
-              key={stat.label}
-              href={stat.href}
-              className="group rounded-xl border bg-white p-5 shadow-sm transition-all hover:shadow-md"
-            >
-              <div className="flex items-center justify-between">
-                <div className={cn("rounded-lg p-2.5", stat.bg)}>
-                  <Icon className={cn("h-5 w-5", stat.color)} />
-                </div>
-                {stat.trend !== "neutral" && (
-                  <span
-                    className={cn(
-                      "flex items-center text-xs font-medium",
-                      stat.trend === "down"
-                        ? "text-green-600"
-                        : "text-red-600"
-                    )}
-                  >
-                    {stat.change}
-                    {stat.trend === "down" ? (
-                      <ArrowDownRight className="ml-0.5 h-3 w-3" />
-                    ) : (
-                      <ArrowUpRight className="ml-0.5 h-3 w-3" />
-                    )}
-                  </span>
-                )}
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((s) => (
+          <div key={s.label} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className="flex items-center justify-between">
+              <div className={cn("p-2 rounded-lg", s.bg)}>
+                <s.icon className={cn("h-5 w-5", s.color)} />
               </div>
-              <div className="mt-3">
-                <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Recent Activity */}
-        <div className="lg:col-span-2 rounded-xl border bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b p-4">
-            <div className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-muted-foreground" />
-              <h2 className="font-semibold">Recent Activity</h2>
+              {s.trend !== 0 && (
+                <span className={cn("flex items-center text-xs font-medium", s.trend < 0 ? "text-green-600" : "text-red-600")}>
+                  {s.trend < 0 ? <TrendingDown className="h-3 w-3 mr-1" /> : <TrendingUp className="h-3 w-3 mr-1" />}
+                  {Math.abs(s.trend)}
+                </span>
+              )}
             </div>
-            <button className="text-xs text-primary hover:underline">
-              View all
-            </button>
+            <p className="mt-3 text-2xl font-bold text-gray-900">{s.value}</p>
+            <p className="text-sm text-gray-500">{s.label}</p>
           </div>
-          <div className="divide-y">
-            {recentActivity.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 p-4 hover:bg-muted/30"
-              >
-                <div
-                  className={cn(
-                    "mt-1.5 h-2 w-2 shrink-0 rounded-full",
-                    item.type === "success" && "bg-green-500",
-                    item.type === "info" && "bg-blue-500",
-                    item.type === "warning" && "bg-amber-500"
-                  )}
-                />
-                <div className="flex-1">
-                  <p className="text-sm">{item.action}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {item.user} &middot; {item.time}
-                  </p>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Activity */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 lg:col-span-2">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Activity className="h-5 w-5 text-gray-400" /> Recent Activity
+          </h2>
+          <div className="space-y-4">
+            {recentActivity.map((item) => (
+              <div key={item.id} className="flex items-start gap-3">
+                <span className={cn("mt-1.5 h-2.5 w-2.5 rounded-full flex-shrink-0", item.dot)} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-800">{item.text}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{item.time}</p>
                 </div>
               </div>
             ))}
@@ -234,138 +103,75 @@ export default function DashboardPage() {
         </div>
 
         {/* Compliance Metrics */}
-        <div className="rounded-xl border bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b p-4">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-muted-foreground" />
-              <h2 className="font-semibold">Compliance Metrics</h2>
-            </div>
-          </div>
-          <div className="space-y-4 p-4">
-            {complianceMetrics.map((metric) => (
-              <div key={metric.label}>
-                <div className="flex items-center justify-between text-sm">
-                  <span>{metric.label}</span>
-                  <span
-                    className={cn(
-                      "font-medium",
-                      metric.score >= metric.target
-                        ? "text-green-600"
-                        : "text-amber-600"
-                    )}
-                  >
-                    {metric.score}%
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Compliance Metrics</h2>
+          <div className="space-y-4">
+            {complianceMetrics.map((m) => (
+              <div key={m.label}>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-gray-600">{m.label}</span>
+                  <span className={cn("font-medium", m.value >= m.target ? "text-green-600" : "text-red-600")}>
+                    {m.value}%
                   </span>
                 </div>
-                <div className="mt-1.5 h-2 rounded-full bg-muted">
+                <div className="w-full bg-gray-100 rounded-full h-2 relative">
                   <div
-                    className={cn(
-                      "h-2 rounded-full transition-all",
-                      metric.score >= metric.target
-                        ? "bg-green-500"
-                        : "bg-amber-500"
-                    )}
-                    style={{ width: `${metric.score}%` }}
+                    className={cn("h-2 rounded-full", m.value >= m.target ? "bg-green-500" : "bg-red-400")}
+                    style={{ width: `${m.value}%` }}
+                  />
+                  <div
+                    className="absolute top-0 h-2 w-0.5 bg-gray-800"
+                    style={{ left: `${m.target}%` }}
+                    title={`Target: ${m.target}%`}
                   />
                 </div>
-                <p className="mt-0.5 text-[10px] text-muted-foreground">
-                  Target: {metric.target}%
-                </p>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* System Status + Risk Overview */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1">
-          <SystemStatus />
-        </div>
-        <div className="lg:col-span-2 rounded-xl border bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b p-4">
-            <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-muted-foreground" />
-              <h2 className="font-semibold">Risk Overview</h2>
-            </div>
-          </div>
-          <div className="p-4">
-            <div className="grid grid-cols-5 gap-3">
-              {[
-                { level: "Unacceptable", count: 0, color: "bg-red-500", textColor: "text-red-700", bg: "bg-red-50" },
-                { level: "High", count: 3, color: "bg-orange-500", textColor: "text-orange-700", bg: "bg-orange-50" },
-                { level: "Medium", count: 8, color: "bg-yellow-500", textColor: "text-yellow-700", bg: "bg-yellow-50" },
-                { level: "Low", count: 12, color: "bg-green-500", textColor: "text-green-700", bg: "bg-green-50" },
-                { level: "Negligible", count: 5, color: "bg-gray-400", textColor: "text-gray-700", bg: "bg-gray-50" },
-              ].map((r) => (
-                <div key={r.level} className={cn("rounded-lg p-3 text-center", r.bg)}>
-                  <div className={cn("text-2xl font-bold", r.textColor)}>{r.count}</div>
-                  <div className="text-[10px] text-muted-foreground mt-1">{r.level}</div>
-                  <div className={cn("h-1.5 rounded-full mt-2", r.color)} />
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 rounded-lg bg-muted/50 p-3">
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">28 total risk assessments</span> across 4 active products.
-                All risks are within acceptable levels per ISO 14971 risk management framework.
-                Next risk review scheduled for Q2 2026.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* System Status */}
+        <SystemStatus />
 
-      {/* Upcoming Tasks */}
-      <div className="rounded-xl border bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b p-4">
-          <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold">Upcoming Tasks & Deadlines</h2>
+        {/* Risk Overview */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Risk Overview</h2>
+          <div className="space-y-3">
+            {riskOverview.map((r) => (
+              <div key={r.level} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className={cn("h-3 w-3 rounded-full", r.color)} />
+                  <span className="text-sm text-gray-700">{r.level}</span>
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{r.count}</span>
+              </div>
+            ))}
           </div>
-          <button className="text-xs text-primary hover:underline">
-            View calendar
-          </button>
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <p className="text-xs text-gray-500">Total active risks: {riskOverview.reduce((a, b) => a + b.count, 0)}</p>
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
-                <th className="p-3 font-medium">Task</th>
-                <th className="p-3 font-medium">Department</th>
-                <th className="p-3 font-medium">Due Date</th>
-                <th className="p-3 font-medium">Priority</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {upcomingTasks.map((task, i) => (
-                <tr key={i} className="hover:bg-muted/30">
-                  <td className="p-3 text-sm">{task.title}</td>
-                  <td className="p-3 text-sm text-muted-foreground">
-                    {task.department}
-                  </td>
-                  <td className="p-3 text-sm text-muted-foreground">
-                    {task.due}
-                  </td>
-                  <td className="p-3">
-                    <span
-                      className={cn(
-                        "inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium",
-                        task.priority === "CRITICAL" &&
-                          "bg-red-100 text-red-700",
-                        task.priority === "HIGH" &&
-                          "bg-orange-100 text-orange-700",
-                        task.priority === "MEDIUM" &&
-                          "bg-yellow-100 text-yellow-700"
-                      )}
-                    >
-                      {task.priority}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+        {/* Upcoming Tasks */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <CalendarClock className="h-5 w-5 text-gray-400" /> Upcoming Tasks
+          </h2>
+          <div className="space-y-3">
+            {upcomingTasks.map((t) => (
+              <div key={t.id} className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm text-gray-800 truncate">{t.task}</p>
+                  <p className="text-xs text-gray-400">{t.assignee} &middot; {t.due}</p>
+                </div>
+                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap", getStatusColor(t.priority))}>
+                  {t.priority}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

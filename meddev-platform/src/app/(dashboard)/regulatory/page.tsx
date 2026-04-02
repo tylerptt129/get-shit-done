@@ -1,67 +1,94 @@
 "use client";
 
-import { FileCheck, Globe, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { cn, getStatusColor } from "@/lib/utils";
+import {
+  FileCheck,
+  Globe,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
 
-const submissions = [
-  { id: "SUB-001", product: "CardioSense Monitor", type: "FDA 510(k)", market: "US", status: "UNDER_REVIEW", submitted: "Feb 15, 2026", body: "FDA" },
-  { id: "SUB-002", product: "OrthoFlex Implant", type: "CE Mark (MDR)", market: "EU", status: "PREPARING", submitted: "—", body: "Notified Body" },
-  { id: "SUB-003", product: "NeuroStim Pulse", type: "FDA De Novo", market: "US", status: "ADDITIONAL_INFO", submitted: "Jan 10, 2026", body: "FDA" },
-  { id: "SUB-004", product: "CardioSense Monitor", type: "Health Canada", market: "CA", status: "APPROVED", submitted: "Nov 5, 2025", body: "Health Canada" },
-  { id: "SUB-005", product: "DermaScan Pro", type: "FDA 510(k)", market: "US", status: "APPROVED", submitted: "Oct 20, 2025", body: "FDA" },
+const summaryCards = [
+  { label: "Active Submissions", value: 3, icon: Globe, color: "text-purple-600", bg: "bg-purple-50" },
+  { label: "Pending Reviews", value: 4, icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
+  { label: "Approved This Year", value: 2, icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" },
+  { label: "Action Required", value: 1, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
 ];
 
-const complianceItems = [
-  { standard: "ISO 13485:2016", status: "Certified", expiry: "Aug 2027", action: "Surveillance audit May 2026" },
-  { standard: "21 CFR 820", status: "Compliant", expiry: "—", action: "FDA inspection readiness review" },
-  { standard: "EU MDR 2017/745", status: "In Progress", expiry: "—", action: "Technical documentation update" },
-  { standard: "ISO 14971:2019", status: "Compliant", expiry: "—", action: "Risk management file review Q2" },
-  { standard: "IEC 62304", status: "Compliant", expiry: "—", action: "Software lifecycle maintenance" },
+const submissions = [
+  { id: "SUB-2026-001", product: "CardioSense Pro", type: "FDA 510(k)", reference: "K263201", status: "under_review", submitted: "Feb 15, 2026", target: "May 15, 2026" },
+  { id: "SUB-2026-002", product: "OrthoFlex Implant v2", type: "CE Mark (MDR)", reference: "CE-2026-0045", status: "additional_info", submitted: "Jan 20, 2026", target: "Jun 30, 2026" },
+  { id: "SUB-2026-003", product: "NeuroStim Controller", type: "FDA PMA Supplement", reference: "P260012/S004", status: "preparing", submitted: "—", target: "Jul 1, 2026" },
+  { id: "SUB-2026-004", product: "DermaScan Patch", type: "FDA 510(k)", reference: "K262987", status: "approved", submitted: "Nov 10, 2025", target: "—" },
+  { id: "SUB-2026-005", product: "CardioSense Pro", type: "Health Canada", reference: "HC-2026-1122", status: "submitted", submitted: "Mar 5, 2026", target: "Sep 5, 2026" },
+];
+
+const standards = [
+  { standard: "ISO 13485:2016", scope: "Quality Management System", status: "active", lastAudit: "Oct 2025", nextAudit: "Oct 2026", certificate: "TUV-QMS-2025-4412" },
+  { standard: "21 CFR Part 820", scope: "Quality System Regulation", status: "active", lastAudit: "Aug 2025", nextAudit: "Aug 2026", certificate: "FDA Est. 3012456" },
+  { standard: "EU MDR 2017/745", scope: "Medical Device Regulation", status: "active", lastAudit: "Dec 2025", nextAudit: "Dec 2026", certificate: "NB-MDR-2025-0891" },
+  { standard: "ISO 14971:2019", scope: "Risk Management", status: "active", lastAudit: "Oct 2025", nextAudit: "Oct 2026", certificate: "Integrated w/ QMS" },
+  { standard: "IEC 62304:2015", scope: "Software Life Cycle", status: "active", lastAudit: "Oct 2025", nextAudit: "Oct 2026", certificate: "Integrated w/ QMS" },
+  { standard: "IEC 60601-1:2020", scope: "Electrical Safety", status: "conditional", lastAudit: "Jun 2025", nextAudit: "Jun 2026", certificate: "TUV-ES-2025-2201" },
 ];
 
 export default function RegulatoryPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <FileCheck className="h-7 w-7 text-purple-600" />
-          Regulatory Affairs
-        </h1>
-        <p className="text-sm text-muted-foreground">Submissions, Compliance Tracking & Market Authorizations</p>
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-purple-50 rounded-lg">
+          <FileCheck className="h-6 w-6 text-purple-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Regulatory Affairs</h1>
+          <p className="text-sm text-gray-500">Submissions, standards compliance, and regulatory intelligence</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-        {[
-          { label: "Active Submissions", value: "3", icon: Globe, color: "text-purple-600", bg: "bg-purple-50" },
-          { label: "Pending Response", value: "1", icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-          { label: "Approved (YTD)", value: "2", icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" },
-          { label: "Action Required", value: "1", icon: AlertCircle, color: "text-red-600", bg: "bg-red-50" },
-        ].map((s) => (
-          <div key={s.label} className="rounded-xl border bg-white p-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className={cn("rounded-lg p-2", s.bg)}><s.icon className={cn("h-5 w-5", s.color)} /></div>
-              <div><p className="text-2xl font-bold">{s.value}</p><p className="text-xs text-muted-foreground">{s.label}</p></div>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {summaryCards.map((c) => (
+          <div key={c.label} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div className={cn("p-2 rounded-lg w-fit", c.bg)}>
+              <c.icon className={cn("h-5 w-5", c.color)} />
             </div>
+            <p className="mt-3 text-2xl font-bold text-gray-900">{c.value}</p>
+            <p className="text-sm text-gray-500">{c.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm">
-        <div className="border-b p-4"><h2 className="font-semibold">Regulatory Submissions</h2></div>
+      {/* Regulatory Submissions */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Regulatory Submissions</h2>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead><tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
-              <th className="p-3 font-medium">ID</th><th className="p-3 font-medium">Product</th><th className="p-3 font-medium">Type</th><th className="p-3 font-medium">Market</th><th className="p-3 font-medium">Status</th><th className="p-3 font-medium">Submitted</th>
-            </tr></thead>
-            <tbody className="divide-y">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 text-left text-gray-500">
+                <th className="pb-3 font-medium">ID</th>
+                <th className="pb-3 font-medium">Product</th>
+                <th className="pb-3 font-medium">Type</th>
+                <th className="pb-3 font-medium">Reference</th>
+                <th className="pb-3 font-medium">Status</th>
+                <th className="pb-3 font-medium">Submitted</th>
+                <th className="pb-3 font-medium">Target Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
               {submissions.map((s) => (
-                <tr key={s.id} className="hover:bg-muted/30">
-                  <td className="p-3 text-sm font-medium text-primary">{s.id}</td>
-                  <td className="p-3 text-sm">{s.product}</td>
-                  <td className="p-3 text-sm">{s.type}</td>
-                  <td className="p-3 text-sm">{s.market}</td>
-                  <td className="p-3"><span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", getStatusColor(s.status))}>{s.status.replace(/_/g, " ")}</span></td>
-                  <td className="p-3 text-sm text-muted-foreground">{s.submitted}</td>
+                <tr key={s.id} className="hover:bg-gray-50">
+                  <td className="py-3 font-mono text-xs text-purple-600">{s.id}</td>
+                  <td className="py-3 text-gray-800">{s.product}</td>
+                  <td className="py-3 text-gray-600">{s.type}</td>
+                  <td className="py-3 font-mono text-xs text-gray-600">{s.reference}</td>
+                  <td className="py-3">
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getStatusColor(s.status))}>
+                      {s.status.replace(/_/g, " ")}
+                    </span>
+                  </td>
+                  <td className="py-3 text-gray-600 whitespace-nowrap">{s.submitted}</td>
+                  <td className="py-3 text-gray-600 whitespace-nowrap">{s.target}</td>
                 </tr>
               ))}
             </tbody>
@@ -69,20 +96,34 @@ export default function RegulatoryPage() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-white shadow-sm">
-        <div className="border-b p-4"><h2 className="font-semibold">Standards & Compliance Status</h2></div>
+      {/* Standards & Compliance */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Standards &amp; Compliance Status</h2>
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead><tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
-              <th className="p-3 font-medium">Standard</th><th className="p-3 font-medium">Status</th><th className="p-3 font-medium">Expiry</th><th className="p-3 font-medium">Next Action</th>
-            </tr></thead>
-            <tbody className="divide-y">
-              {complianceItems.map((c, i) => (
-                <tr key={i} className="hover:bg-muted/30">
-                  <td className="p-3 text-sm font-medium">{c.standard}</td>
-                  <td className="p-3"><span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", c.status === "Certified" || c.status === "Compliant" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700")}>{c.status}</span></td>
-                  <td className="p-3 text-sm text-muted-foreground">{c.expiry}</td>
-                  <td className="p-3 text-sm text-muted-foreground">{c.action}</td>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 text-left text-gray-500">
+                <th className="pb-3 font-medium">Standard</th>
+                <th className="pb-3 font-medium">Scope</th>
+                <th className="pb-3 font-medium">Status</th>
+                <th className="pb-3 font-medium">Last Audit</th>
+                <th className="pb-3 font-medium">Next Audit</th>
+                <th className="pb-3 font-medium">Certificate</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {standards.map((s) => (
+                <tr key={s.standard} className="hover:bg-gray-50">
+                  <td className="py-3 font-medium text-gray-900">{s.standard}</td>
+                  <td className="py-3 text-gray-600">{s.scope}</td>
+                  <td className="py-3">
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", getStatusColor(s.status))}>
+                      {s.status}
+                    </span>
+                  </td>
+                  <td className="py-3 text-gray-600 whitespace-nowrap">{s.lastAudit}</td>
+                  <td className="py-3 text-gray-600 whitespace-nowrap">{s.nextAudit}</td>
+                  <td className="py-3 font-mono text-xs text-gray-500">{s.certificate}</td>
                 </tr>
               ))}
             </tbody>
