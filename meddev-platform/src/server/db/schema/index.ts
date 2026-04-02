@@ -11,3 +11,4 @@ export * from "./suppliers";
 export * from "./audit-log";
 export * from "./ai-usage";
 export * from "./admin";
+export * from "./hr";
