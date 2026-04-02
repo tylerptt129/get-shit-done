@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Shield, FileCheck, Ruler, Factory, FileText, Tag,
   Stethoscope, GraduationCap, Truck, LayoutDashboard,
-  ChevronLeft, ChevronRight, Brain, ClipboardList,
+  ChevronLeft, ChevronRight, Brain, ClipboardList, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +27,7 @@ const departments = [
   { name: "Supply Chain", href: "/supply-chain", icon: Truck, color: "text-teal-600", description: "Suppliers, Materials" },
   { name: "Audit Trail", href: "/audit-trail", icon: ClipboardList, color: "text-gray-600", description: "Immutable Event Log" },
   { name: "AI Assistant", href: "/ai", icon: Brain, color: "text-violet-600", description: "AI-powered QMS tools" },
+  { name: "Admin", href: "/admin", icon: ShieldCheck, color: "text-slate-600", description: "Users, Roles, Permissions" },
 ];
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
