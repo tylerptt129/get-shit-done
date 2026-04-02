@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { cn, getStatusColor } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   ShieldCheck,
   Users,
@@ -10,6 +10,13 @@ import {
   Building2,
   ArrowRightLeft,
   ScrollText,
+  UserCog,
+  Calendar,
+  GraduationCap,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  AlertTriangle,
 } from "lucide-react";
 
 import { UsersTab } from "./components/users-tab";
@@ -17,20 +24,33 @@ import { RolesTab } from "./components/roles-tab";
 import { DepartmentsTab } from "./components/departments-tab";
 import { DelegationsTab } from "./components/delegations-tab";
 import { AuditLogsTab } from "./components/audit-logs-tab";
+import { EmployeeProfilesTab } from "./components/employee-profiles-tab";
+import { LeaveTab } from "./components/leave-tab";
+import { TrainingCertsTab } from "./components/training-certs-tab";
+import { CompensationTab } from "./components/compensation-tab";
+import { PerformanceTab } from "./components/performance-tab";
 
 const summaryCards = [
   { label: "Total Users", value: 8, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
   { label: "Active Roles", value: 9, icon: KeyRound, color: "text-purple-600", bg: "bg-purple-50" },
-  { label: "Departments", value: 6, icon: Building2, color: "text-teal-600", bg: "bg-teal-50" },
-  { label: "Delegations", value: 1, icon: ArrowRightLeft, color: "text-orange-600", bg: "bg-orange-50" },
+  { label: "Pending Leave", value: 2, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
+  { label: "Overdue Training", value: 2, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
 ];
 
-const tabs = [
+const adminTabs = [
   { id: "users", label: "Users", icon: Users },
   { id: "roles", label: "Roles & Permissions", icon: KeyRound },
   { id: "departments", label: "Departments", icon: Building2 },
   { id: "delegations", label: "Delegations", icon: ArrowRightLeft },
   { id: "audit-logs", label: "Audit Logs", icon: ScrollText },
+];
+
+const hrTabs = [
+  { id: "employee-profiles", label: "Employee Profiles", icon: UserCog },
+  { id: "leave", label: "Leave / PTO", icon: Calendar },
+  { id: "training-certs", label: "Training & Certs", icon: GraduationCap },
+  { id: "compensation", label: "Compensation", icon: DollarSign },
+  { id: "performance", label: "Performance", icon: TrendingUp },
 ];
 
 export default function AdminPage() {
@@ -43,8 +63,8 @@ export default function AdminPage() {
           <ShieldCheck className="h-6 w-6 text-slate-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Administration</h1>
-          <p className="text-sm text-gray-500">User administration, roles, permissions, and compliance controls</p>
+          <h1 className="text-2xl font-bold text-gray-900">Admin &amp; HR</h1>
+          <p className="text-sm text-gray-500">User administration, roles, permissions, HR management, and compliance controls</p>
         </div>
       </div>
 
@@ -61,10 +81,11 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {/* Tab Navigation */}
+      {/* Tab Navigation with Admin / HR separator */}
       <div className="border-b border-gray-200">
         <nav className="flex gap-1 -mb-px overflow-x-auto">
-          {tabs.map((tab) => (
+          {/* Admin Tabs */}
+          {adminTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -72,6 +93,29 @@ export default function AdminPage() {
                 "flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors",
                 activeTab === tab.id
                   ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              )}
+            >
+              <tab.icon className="h-4 w-4" />
+              {tab.label}
+            </button>
+          ))}
+
+          {/* Separator */}
+          <div className="flex items-center px-2">
+            <div className="h-6 w-px bg-gray-300" />
+            <span className="ml-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">HR</span>
+          </div>
+
+          {/* HR Tabs */}
+          {hrTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors",
+                activeTab === tab.id
+                  ? "border-emerald-600 text-emerald-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               )}
             >
@@ -88,6 +132,11 @@ export default function AdminPage() {
       {activeTab === "departments" && <DepartmentsTab />}
       {activeTab === "delegations" && <DelegationsTab />}
       {activeTab === "audit-logs" && <AuditLogsTab />}
+      {activeTab === "employee-profiles" && <EmployeeProfilesTab />}
+      {activeTab === "leave" && <LeaveTab />}
+      {activeTab === "training-certs" && <TrainingCertsTab />}
+      {activeTab === "compensation" && <CompensationTab />}
+      {activeTab === "performance" && <PerformanceTab />}
     </div>
   );
 }

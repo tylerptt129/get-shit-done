@@ -17,7 +17,7 @@ export type Module =
   | "audit_trail"
   | "ai";
 
-export type PermissionLevel = "none" | "view" | "edit" | "approve" | "admin";
+export type PermissionLevel = "none" | "view" | "edit" | "approve" | "admin" | "hr_admin";
 
 const PERMISSION_HIERARCHY: Record<PermissionLevel, number> = {
   none: 0,
@@ -25,6 +25,7 @@ const PERMISSION_HIERARCHY: Record<PermissionLevel, number> = {
   edit: 2,
   approve: 3,
   admin: 4,
+  hr_admin: 5, // Inherits all of admin + compensation, FMLA details, performance mgmt
 };
 
 /**
@@ -132,7 +133,9 @@ export async function getUserPermissions(
   const result: Record<string, PermissionLevel> = {};
 
   for (const mod of modules) {
-    if (await checkPermission(tenantId, userId, mod, "admin")) {
+    if (await checkPermission(tenantId, userId, mod, "hr_admin")) {
+      result[mod] = "hr_admin";
+    } else if (await checkPermission(tenantId, userId, mod, "admin")) {
       result[mod] = "admin";
     } else if (await checkPermission(tenantId, userId, mod, "approve")) {
       result[mod] = "approve";

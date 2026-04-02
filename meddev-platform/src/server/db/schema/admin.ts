@@ -18,6 +18,7 @@ export const permissionLevelEnum = pgEnum("permission_level", [
   "view",
   "edit",
   "approve",
+  "hr_admin",
   "admin",
 ]);
 export const assignmentStatusEnum = pgEnum("assignment_status", [
